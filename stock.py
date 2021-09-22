@@ -11,6 +11,10 @@ import openpyxl
 class Stock:
     API_KEY = 'a5c976581917ad4df2ac3509b69d8717f4d15d56'
     COLUMNS = ['회사명', '지배주주지분', 'ROE_2018', 'ROE_2019', 'ROE_2020', 'ROE_2021', '발행주식수', '자사주']
+    NHN_INIT = {'매출액': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                '영업이익': [0.0, 0.0, 0, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0],
+                '당기순이익': [0, 0.0, 0, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0],
+                'ROE(지배주주)': [0.0, 0.0, 0.0, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0]}
     YEAR = 2020
     df = None
     dart = None
@@ -60,14 +64,19 @@ class Stock:
             dict[sub_title] = value_param
 
         for i, code in enumerate(self.df['code']):
+            dict.clear()
             link = 'https://finance.naver.com/item/main.nhn?code={0}'.format(code)
             sub_res = requests.get(link)  # 링크를 통해 우리가 원하는 기업별 데이터 페이지 데이터 크롤링
             sub_soup = BeautifulSoup(sub_res.text, 'html.parser')
             ParamList = ['매출액', '영업이익', '당기순이익', 'ROE(지배주주)']
 
             for idx, pText in enumerate(ParamList):
-                param = " ".join(sub_soup.find('strong', text=pText).parent['class'])
-                get_data_of_param(param)
+                try:
+                    param = " ".join(sub_soup.find('strong', text=pText).parent['class'])
+                    get_data_of_param(param)
+                except Exception as e:
+                    dict = self.NHN_INIT
+
             self.df.loc[i, ['ROE_2018', 'ROE_2019', 'ROE_2020', 'ROE_2021']] = dict['ROE(지배주주)'][0:4]
 
     def get_dart(self):
@@ -79,7 +88,13 @@ class Stock:
                 return int(str.replace(',', ''))
 
         for i, code in enumerate(self.df['code']):
+            # 회사명
+            self.data['회사명'] = self.dart.company(code)['stock_name']
             df2 = self.dart.finstate(code, self.YEAR)
+            if df2 is None:
+                self.df.loc[i, ['회사명']] = [self.data['회사명']]
+                continue
+
             self.data['자산총계'] = int_validate(df2.loc[(df2['fs_nm'] == '연결재무제표') & (df2['sj_nm'] == '재무상태표') & (
                         df2['account_nm'] == '자산총계'), 'thstrm_amount'])
             self.data['부채총계'] = int_validate(df2.loc[(df2['fs_nm'] == '연결재무제표') & (df2['sj_nm'] == '재무상태표') & (
@@ -96,14 +111,12 @@ class Stock:
                             df2['acqs_mth3'] == '소계'), 'bsis_qy'])
             else:
                 self.data['자사주'] = 0
-            # 회사명
-            self.data['회사명'] = self.dart.company(code)['stock_name']
             self.df.loc[i, ['회사명', '지배주주지분', '발행주식수', '자사주']] = \
                 [self.data['회사명'], self.data['지배주주지분'], self.data['발행주식수'], self.data['자사주']]
 
 
 def main():
-    stock = Stock()
+    stock = Stock(path='/Users/pobbiester/PycharmProjects/stock/stock.xlsx')
     stock.get_roe()
     stock.get_dart()
     stock.write_xlsx()
