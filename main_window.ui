@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>510</width>
-    <height>223</height>
+    <width>509</width>
+    <height>170</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -40,26 +40,13 @@
      <string>START</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton">
-    <property name="geometry">
-     <rect>
-      <x>60</x>
-      <y>100</y>
-      <width>141</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>UPDATE</string>
-    </property>
-   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>510</width>
+     <width>509</width>
      <height>24</height>
     </rect>
    </property>
@@ -97,22 +84,6 @@
     <hint type="destinationlabel">
      <x>387</x>
      <y>188</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushButton</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>update_button_clicked()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>172</x>
-     <y>154</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>171</x>
-     <y>189</y>
     </hint>
    </hints>
   </connection>

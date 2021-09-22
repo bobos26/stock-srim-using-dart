@@ -30,13 +30,10 @@ class MyWindow(QMainWindow, form_class):
             self.stock.write_xlsx()
         except Exception as e:
             QMessageBox.about(self, 'ERROR', 'FAIL!')
+            print(e)
             return
 
         QMessageBox.about(self, 'INFO', 'SUCCESS!')
-
-    @pyqtSlot()
-    def update_button_clicked(self):
-        QMessageBox.about(self, 'INFO', 'update is success!')
 
 
 if __name__ == "__main__":

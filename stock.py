@@ -10,7 +10,7 @@ import openpyxl
 
 class Stock:
     API_KEY = 'a5c976581917ad4df2ac3509b69d8717f4d15d56'
-    COLUMNS = ['회사명', '지배주주지분', 'ROE_2019', 'ROE_2020', 'ROE_2021', 'ROE_2022', '발행주식수', '자사주', '할인율']
+    COLUMNS = ['회사명', '지배주주지분', 'ROE_2018', 'ROE_2019', 'ROE_2020', 'ROE_2021', '발행주식수', '자사주']
     YEAR = 2020
     df = None
     dart = None
@@ -39,25 +39,26 @@ class Stock:
         return dart
 
     @staticmethod
-    def get_data_of_param(sub_soup, dic, param):
-        def str_to_float(dataOfParam):
-            out = []
-            for data in dataOfParam:
-                try:
-                    out.append(float(data.get_text().strip()))
-                except Exception as e:
-                    out.append(0)
-            return out
-
-        sub_tbody = sub_soup.find("table", attrs={"class": "tb_type1 tb_num tb_type1_ifrs"}).find("tbody")
-        sub_title = sub_tbody.find("th", attrs={"class": param}).get_text().strip()
-
-        dataOfParam = sub_tbody.find("th", attrs={"class": param}).parent.find_all("td")
-        value_param = str_to_float(dataOfParam)
-        dic[sub_title] = value_param
+    def str_to_float(dataOfParam):
+        out = []
+        for data in dataOfParam:
+            try:
+                out.append(float(data.get_text().strip()))
+            except Exception as e:
+                out.append(0)
+        return out
 
     def get_roe(self):
         dict = {}
+
+        def get_data_of_param(param):
+            sub_tbody = sub_soup.find("table", attrs={"class": "tb_type1 tb_num tb_type1_ifrs"}).find("tbody")
+            sub_title = sub_tbody.find("th", attrs={"class": param}).get_text().strip()
+
+            dataOfParam = sub_tbody.find("th", attrs={"class": param}).parent.find_all("td")
+            value_param = self.str_to_float(dataOfParam)
+            dict[sub_title] = value_param
+
         for i, code in enumerate(self.df['code']):
             link = 'https://finance.naver.com/item/main.nhn?code={0}'.format(code)
             sub_res = requests.get(link)  # 링크를 통해 우리가 원하는 기업별 데이터 페이지 데이터 크롤링
@@ -66,8 +67,8 @@ class Stock:
 
             for idx, pText in enumerate(ParamList):
                 param = " ".join(sub_soup.find('strong', text=pText).parent['class'])
-                self.get_data_of_param(sub_soup, dict, param)
-            self.df.loc[i, ['ROE_2019', 'ROE_2020', 'ROE_2021', 'ROE_2022']] = dict['ROE(지배주주)'][0:4]
+                get_data_of_param(param)
+            self.df.loc[i, ['ROE_2018', 'ROE_2019', 'ROE_2020', 'ROE_2021']] = dict['ROE(지배주주)'][0:4]
 
     def get_dart(self):
         def int_validate(series):
