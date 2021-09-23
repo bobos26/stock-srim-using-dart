@@ -28,7 +28,7 @@ class Stock:
 
     def read_xlsx(self):
         df = pd.read_excel(self.path, sheet_name='Sheet1', dtype=str)
-        data = np.full((len(df), len(self.COLUMNS)), 0)
+        data = np.full((len(df), len(self.COLUMNS)), 0.0)  # to ignore a int64 overflow, use float64
         df_add = pd.DataFrame(data=data, columns=self.COLUMNS)
         df = pd.concat([df, df_add], axis=1)
         return df
